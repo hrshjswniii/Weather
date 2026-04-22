@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Weather Dashboard</title>
-
-<link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -16,31 +12,29 @@
 <h1>Weather Dashboard</h1>
 
 <div class="search-box">
+  <div class="input-wrapper">
+    <input
+      type="text"
+      id="city"
+      placeholder="Enter city name"
+      autocomplete="off"
+    />
+    <ul id="suggestions-list" class="suggestions hidden"></ul>
+  </div>
 
-<input
-type="text"
-id="city"
-placeholder="Enter city name"
-/>
-
-<button onclick="getWeather()">Search</button>
-
+  <button onclick="getWeather()">Search</button>
 </div>
 
 <div id="weather-card">
-
-<h2 id="name">City</h2>
-
-<p id="temp">-- °C</p>
-
-<p id="condition"></p>
-
-<img id="icon" alt="">
-
+  <h2 id="name">City</h2>
+  <p id="temp">-- °C</p>
+  <p id="condition"></p>
+  <img id="icon" alt="">
 </div>
 
+<!-- IMPORTANT: config BEFORE script -->
+<script src="config.js"></script>
 <script src="script.js"></script>
 
 </body>
-
 </html>

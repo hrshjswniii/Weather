@@ -1,82 +1,102 @@
-const apiKey = "f0133e94263d448c963164120261904";
+const apiKey = config.WEATHER_API_KEY;
 
+// ---------------- WEATHER ----------------
 
 function getWeather() {
+  const city = document.getElementById("city").value.trim();
 
-const city = document.getElementById("city").value.trim();
+  if (!city) {
+    alert("Please enter a city name");
+    return;
+  }
 
-if (!city) {
-alert("Please enter a city name");
-return;
+  const url = `https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(city)}`;
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      if (data.error) {
+        alert(data.error.message);
+        return;
+      }
+      updateWeather(data);
+    })
+    .catch(() => alert("Failed to fetch weather data"));
 }
 
-const url =
-`https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${encodeURIComponent(city)}`;
+function updateWeather(data) {
+  document.getElementById("name").innerText =
+    data.location.name + ", " + data.location.country;
 
-fetch(url)
-.then(res => res.json())
-.then(data => {
+  document.getElementById("temp").innerText =
+    Math.round(data.current.temp_c) + " °C";
 
-if (data.error) {
-alert(data.error.message);
-return;
+  document.getElementById("condition").innerText =
+    data.current.condition.text;
+
+  document.getElementById("icon").src =
+    "https:" + data.current.condition.icon;
 }
 
-updateWeather(data);
-
-})
-.catch(() => {
-alert("Failed to fetch weather data");
+// ENTER KEY SUPPORT
+document.getElementById("city").addEventListener("keypress", function (e) {
+  if (e.key === "Enter") getWeather();
 });
 
-}
+// ---------------- AUTOCOMPLETE ----------------
 
+const cityInput = document.getElementById("city");
+const suggestionsList = document.getElementById("suggestions-list");
 
+let debounceTimer;
 
-function updateWeather(data){
+cityInput.addEventListener("input", function () {
+  const query = this.value.trim();
 
-document.getElementById("name").innerText =
-data.location.name + ", " + data.location.country;
+  clearTimeout(debounceTimer);
 
-document.getElementById("temp").innerText =
-Math.round(data.current.temp_c) + " °C";
+  if (query.length < 2) {
+    suggestionsList.classList.add("hidden");
+    return;
+  }
 
-document.getElementById("condition").innerText =
-data.current.condition.text;
-
-document.getElementById("icon").src =
-"https:" + data.current.condition.icon;
-
-}
-
-
-
-document.getElementById("city").addEventListener("keypress", function(e){
-
-if(e.key === "Enter"){
-getWeather();
-}
-
+  debounceTimer = setTimeout(() => fetchSuggestions(query), 300);
 });
 
-
-
-navigator.geolocation.getCurrentPosition(showPosition);
-
-function showPosition(position){
-
-const lat = position.coords.latitude;
-const lon = position.coords.longitude;
-
-const url =
-`https://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${lat},${lon}`;
-
-fetch(url)
-.then(res => res.json())
-.then(data => {
-
-updateWeather(data);
-
+document.addEventListener("click", (e) => {
+  if (!cityInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+    suggestionsList.classList.add("hidden");
+  }
 });
 
+function fetchSuggestions(query) {
+  fetch(`https://api.weatherapi.com/v1/search.json?key=${apiKey}&q=${query}`)
+    .then(res => res.json())
+    .then(data => {
+      suggestionsList.innerHTML = "";
+
+      if (data.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No results found";
+        suggestionsList.appendChild(li);
+      } else {
+        data.forEach(city => {
+          const li = document.createElement("li");
+          li.textContent = `${city.name}, ${city.country}`;
+
+          li.addEventListener("click", () => {
+            cityInput.value = city.name;
+            suggestionsList.classList.add("hidden");
+            getWeather();
+          });
+
+          suggestionsList.appendChild(li);
+        });
+      }
+
+      suggestionsList.classList.remove("hidden");
+    })
+    .catch(() => {
+      suggestionsList.classList.add("hidden");
+    });
 }
